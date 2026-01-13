@@ -1,11 +1,11 @@
-// src/middleware.ts
+// src/proxy.ts
 import { NextResponse, type NextRequest } from "next/server";
 import {
   getUserFromSession,
   updateUserSessionExpiration,
 } from "./lib/auth/session-edge";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Jalankan auth untuk 3 grup halaman yg diproteksi
   const res = await guardPages(request);
   const response = res ?? NextResponse.next();

@@ -7,10 +7,11 @@ export const runtime = "nodejs";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const p = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id },
     select: {
       id: true,
       name: true,
@@ -29,8 +30,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const body = await req.json().catch(() => null);
   const parse = productUpdateSchema.safeParse({
     ...body,
@@ -43,7 +45,7 @@ export async function PATCH(
   const data = parse.data;
   try {
     const updated = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: data.name ?? undefined,
         price: data.price ?? undefined,
@@ -62,10 +64,11 @@ export async function PATCH(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    await prisma.product.delete({ where: { id: params.id } });
+    await prisma.product.delete({ where: { id } });
     return json({ ok: true });
   } catch {
     return error("Not found", 404);

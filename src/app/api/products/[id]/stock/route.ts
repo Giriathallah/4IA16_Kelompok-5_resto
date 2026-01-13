@@ -7,8 +7,9 @@ export const runtime = "nodejs";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const body = await req.json().catch(() => null);
   const parse = stockAdjustSchema.safeParse({
     ...body,
@@ -21,7 +22,7 @@ export async function POST(
 
   return await prisma.$transaction(async (tx) => {
     const product = await tx.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, stock: true },
     });
     if (!product) return error("Product not found", 404);
@@ -38,11 +39,11 @@ export async function POST(
       });
 
     await tx.product.update({
-      where: { id: params.id },
+      where: { id },
       data: { stock: newStock },
     });
     const mv = await tx.stockMovement.create({
-      data: { productId: params.id, type, qty, note: note ?? null },
+      data: { productId: id, type, qty, note: note ?? null },
       select: { id: true, createdAt: true },
     });
 
